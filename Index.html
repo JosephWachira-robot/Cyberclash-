@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberClash - Red Team vs Blue Team Arena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #00f0ff;
+            --secondary-color: #0066ff;
+            --bg-color: #0a0e27;
+            --accent-glow: rgba(0, 240, 255, 0.3);
+        }
+
+        [data-theme="red"] {
+            --primary-color: #ff003c;
+            --secondary-color: #ff6b35;
+            --bg-color: #1a0505;
+            --accent-glow: rgba(255, 0, 60, 0.3);
+        }
+
+        [data-theme="blue"] {
+            --primary-color: #00f0ff;
+            --secondary-color: #0066ff;
+            --bg-color: #0a0e27;
+            --accent-glow: rgba(0, 240, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            overflow-x: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .font-cyber {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Matrix Rain Effect */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        /* Glitch Effect */
+        .glitch {
+            position: relative;
+            animation: glitch-skew 1s infinite;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00ff;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 #00ffff;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(31px, 9999px, 94px, 0); }
+            20% { clip: rect(76px, 9999px, 11px, 0); }
+            40% { clip: rect(99px, 9999px, 21px, 0); }
+            60% { clip: rect(45px, 9999px, 87px, 0); }
+            80% { clip: rect(12px, 9999px, 65px, 0); }
+            100% { clip: rect(88px, 9999px, 32px, 0); }
+        }
+
+        @keyframes glitch-anim2 {
+            0% { clip: rect(65px, 9999px, 99px, 0); }
+            20% { clip: rect(23px, 9999px, 45px, 0); }
+            40% { clip: rect(87px, 9999px, 12px, 0); }
+            60% { clip: rect(34px, 9999px, 78px, 0); }
+            80% { clip: rect(56px, 9999px, 23px, 0); }
+            100% { clip: rect(12px, 9999px, 89px, 0); }
+        }
+
+        @keyframes glitch-skew {
+            0% { transform: skew(0deg); }
+            10% { transform: skew(-2deg); }
+            20% { transform: skew(2deg); }
+            30% { transform: skew(0deg); }
+            100% { transform: skew(0deg); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 5px;
+        }
+
+        /* Button Styles */
+        .cyber-btn {
+            position: relative;
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 1rem 2rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+        }
+
+        .cyber-btn:hover {
+            background: var(--primary-color);
+            color: var(--bg-color);
+            box-shadow: 0 0 30px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        .cyber-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: 0.5s;
+        }
+
+        .cyber-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Card Styles */
+        .cyber-card {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--primary-color);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cyber-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary-color), transparent, var(--primary-color));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .cyber-card:hover::before {
+            opacity: 1;
+        }
+
+        .cyber-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px var(--accent-glow);
+        }
+
+        /* Form Inputs */
+        .cyber-input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            width: 100%;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .cyber-input:focus {
+            box-shadow: 0 0 20px var(--accent-glow);
+            border-width: 2px;
+        }
+
+        .cyber-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Team Selection Cards */
+        .team-card {
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .team-card:hover {
+            transform: scale(1.05);
+        }
+
+        .team-card.selected-red {
+            border-color: #ff003c;
+            box-shadow: 0 0 30px rgba(255, 0, 60, 0.5);
+            background: rgba(255, 0, 60, 0.1);
+        }
+
+        .team-card.selected-blue {
+            border-color: #00f0ff;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+            background: rgba(0, 240, 255, 0.1);
+        }
+
+        /* Hacker Silhouette Background */
+        .hacker-bg {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 80%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff003c' stroke-width='0.5' opacity='0.1'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: bottom right;
+            background-size: contain;
+            pointer-events: none;
+            z-index: -1;
+            transition: all 0.5s;
+        }
+
+        [data-theme="blue"] .hacker-bg {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300f0ff' stroke-width='0.5' opacity='0.1'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/%3E%3C/svg%3E");
+        }
+
+        /* Scanline Effect */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.3;
+        }
+
+        /* Terminal Text Effect */
+        .terminal-text {
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typing 3.5s steps(40, end);
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+
+        /* Navigation */
+        .nav-link {
+            position: relative;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Resource Grid */
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Status Indicators */
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-online {
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Loading Animation */
+        .loader {
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loader-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: var(--primary-color);
+            animation: load 2s infinite;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        @keyframes load {
+            0% { width: 0; left: 0; }
+            50% { width: 100%; left: 0; }
+            100% { width: 0; left: 100%; }
+        }
+
+        /* Hidden by default */
+        .hidden-section {
+            display: none;
+        }
+
+        .visible-section {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body data-theme="blue">
+    <canvas class="matrix-bg" id="matrixCanvas"></canvas>
+    <div class="scanlines"></div>
+    <div class="hacker-bg"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-black/80 backdrop-blur-md border-b border-opacity-20 z-50" style="border-color: var(--primary-color);">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="font-cyber text-2xl font-bold tracking-wider glitch" data-text="CYBERCLASH">
+                CYBERCLASH
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#home" class="nav-link">HOME</a>
+                <a href="#arena" class="nav-link">ARENA</a>
+                <a href="#resources" class="nav-link">RESOURCES</a>
+                <a href="#leaderboard" class="nav-link">LEADERBOARD</a>
+            </div>
+            <div id="userStatus" class="flex items-center space-x-4">
+                <button onclick="showLogin()" class="cyber-btn text-sm py-2 px-4">LOGIN</button>
+            </div>
+        </div>
+        <div class="loader">
+            <div class="loader-bar"></div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-6 container mx-auto min-h-screen">
+        
+        <!-- Hero Section -->
+        <section id="home" class="visible-section min-h-[80vh] flex items-center justify-center relative">
+            <div class="text-center z-10">
+                <h1 class="font-cyber text-6xl md:text-8xl font-black mb-6 glitch" data-text="CHOOSE YOUR SIDE">
+                    CHOOSE YOUR SIDE
+                </h1>
+                <p class="text-xl md:text-2xl mb-12 opacity-80 max-w-2xl mx-auto">
+                    <span class="terminal-text">Enter the arena. Red Team or Blue Team. The choice is yours.</span><span class="blink">_</span>
+                </p>
+                
+                <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <!-- Red Team Card -->
+                    <div class="team-card cyber-card p-8 rounded-lg" onclick="selectTeam('red')">
+                        <div class="text-6xl mb-4">🔴</div>
+                        <h2 class="font-cyber text-3xl font-bold mb-4 text-red-500">RED TEAM</h2>
+                        <p class="mb-6 opacity-80">Offensive security experts. Break defenses, find vulnerabilities, exploit weaknesses.</p>
+                        <ul class="text-left space-y-2 mb-6 text-sm">
+                            <li>⚔️ Penetration Testing</li>
+                            <li>🎯 Exploit Development</li>
+                            <li>🔓 Social Engineering</li>
+                            <li>💣 Red Team Operations</li>
+                        </ul>
+                        <button class="cyber-btn w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-black">
+                            JOIN RED TEAM
+                        </button>
+                    </div>
+
+                    <!-- Blue Team Card -->
+                    <div class="team-card cyber-card p-8 rounded-lg" onclick="selectTeam('blue')">
+                        <div class="text-6xl mb-4">🔵</div>
+                        <h2 class="font-cyber text-3xl font-bold mb-4 text-cyan-400">BLUE TEAM</h2>
+                        <p class="mb-6 opacity-80">Defensive security guardians. Monitor networks, detect threats, respond to incidents.</p>
+                        <ul class="text-left space-y-2 mb-6 text-sm">
+                            <li>🛡️ Incident Response</li>
+                            <li>🔍 Threat Hunting</li>
+                            <li>📊 Security Monitoring</li>
+                            <li>🔐 Defense Engineering</li>
+                        </ul>
+                        <button class="cyber-btn w-full border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black">
+                            JOIN BLUE TEAM
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Registration Section -->
+        <section id="register" class="hidden-section min-h-screen flex items-center justify-center">
+            <div class="cyber-card p-8 md:p-12 rounded-lg max-w-md w-full relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-current to-transparent opacity-50"></div>
+                
+                <h2 class="font-cyber text-3xl font-bold mb-2 text-center">REGISTRATION</h2>
+                <p class="text-center mb-8 opacity-60 text-sm">SECURE CONNECTION ESTABLISHED</p>
+                
+                <form id="registerForm" onsubmit="handleRegister(event)">
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold mb-2 opacity-80">USERNAME</label>
+                        <input type="text" id="regUsername" class="cyber-input rounded" placeholder="Enter handle..." required>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold mb-2 opacity-80">EMAIL</label>
+                        <input type="email" id="regEmail" class="cyber-input rounded" placeholder="user@domain.com" required>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold mb-2 opacity-80">PAYMENT METHOD</label>
+                        <select id="regPayment" class="cyber-input rounded" required>
+                            <option value="">Select Payment Method</option>
+                            <option value="crypto">Cryptocurrency (BTC/ETH)</option>
+                            <option value="paypal">PayPal</option>
+                            <option value="stripe">Credit Card (Stripe)</option>
+                            <option value="wise">Wise Transfer</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold mb-2 opacity-80">TEAM AFFILIATION</label>
+                        <input type="text" id="regTeam" class="cyber-input rounded bg-opacity-50" readonly>
+                    </div>
+
+                    <div class="mb-6 flex items-center">
+                        <input type="checkbox" id="terms" class="mr-2 w-4 h-4 accent-current" required>
+                        <label for="terms" class="text-sm opacity-80">I agree to the terms of engagement</label>
+                    </div>
+
+                    <button type="submit" class="cyber-btn w-full">
+                        INITIALIZE_REGISTRATION()
+                    </button>
+                </form>
+
+                <button onclick="showHome()" class="mt-4 text-sm opacity-60 hover:opacity-100 w-full text-center">
+                    ← Back to Selection
+                </button>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="hidden-section">
+            <div class="mb-8">
+                <h2 class="font-cyber text-4xl font-bold mb-2">OPERATIONS CENTER</h2>
+                <p class="opacity-60">Welcome back, <span id="dashboardUsername" class="font-bold"></span></p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="cyber-card p-6 rounded-lg">
+                    <h3 class="font-cyber text-xl mb-4">ACTIVE MISSIONS</h3>
+                    <div class="text-4xl font-bold mb-2">3</div>
+                    <div class="text-sm opacity-60">Pending vulnerabilities to analyze</div>
+                </div>
+                <div class="cyber-card p-6 rounded-lg">
+                    <h3 class="font-cyber text-xl mb-4">REPUTATION</h3>
+                    <div class="text-4xl font-bold mb-2">1,247</div>
+                    <div class="text-sm opacity-60">Points earned this month</div>
+                </div>
+                <div class="cyber-card p-6 rounded-lg">
+                    <h3 class="font-cyber text-xl mb-4">RANK</h3>
+                    <div class="text-4xl font-bold mb-2">#42</div>
+                    <div class="text-sm opacity-60">Global leaderboard position</div>
+                </div>
+            </div>
+
+            <div class="cyber-card p-6 rounded-lg mb-8">
+                <h3 class="font-cyber text-2xl mb-4">LIVE FEED</h3>
+                <div class="space-y-3 font-mono text-sm">
+                    <div class="flex items-center justify-between border-b border-opacity-20 pb-2" style="border-color: var(--primary-color);">
+                        <span class="opacity-60">[14
